@@ -1,0 +1,214 @@
+<main class="main-content">
+    <header class="header-section">
+        <div>
+            <h1 class="page-title">Products</h1>
+            <p class="page-subtitle">View all status from the dashboard.</p>
+        </div>
+
+        <div class="user-profile">
+            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/8bb0745711ce6133076d46e9679fb39046eda8008659709e00d84e588f01f7b1"
+                alt="User Profile" class="profile-image">
+            <div class="profile-info">
+                <span class="profile-name">Nguyen Phuong</span>
+                <span class="profile-email">dsun.agency@gmail.com</span>
+            </div>
+            <button aria-label="User menu" class="profile-menu">
+                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/d06db6e006919a5ea636ac00218298dc8ea375846d2fc7f39ffddf2b532ee929"
+                    alt="">
+            </button>
+        </div>
+    </header>
+
+    <nav class="booking-nav" aria-label="Booking navigation">
+        <div class="booking-container-product">
+            <div class="tab-group-product">
+                <a href="#booking-list" class="tab-link tab-link-black active" aria-current="page">
+                    <div class="active-indicator" aria-hidden="true"></div>
+                    <span class="tab-text">Product List</span>
+                </a>
+                <a href="/admin/adminproduct/addproduct">`
+                    <button class="add-product-btn" tabindex="0">
+                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/b633fdb76f5b691270eead81d21f22c6900577decef1c1f6a355bcc914dbc0e0"
+                            alt="" class="add-icon" />
+                        <span>Add New Product</span>
+                    </button>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="booking-section" aria-label="Booking List">
+        <div class="table-container">
+            <table class="booking-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Image</th>
+                        <th scope="col">Giá</th>
+                        <th scope="col">Giá khuyến mãi</th>
+                        <th scope="col">Tên sản phẩm</th>
+                        <th scope="col">Danh mục</th>
+                        <th scope="col">Trạng thái</th>
+                        <th scope="col">Ngày tạo</th>
+                        <th scope="col" colspan="2">Tương tác</th>
+                    </tr>
+                </thead>
+
+                <tbody id="productTableBody">
+                    <!-- Dữ liệu sản phẩm sẽ được render ở đây -->
+                </tbody>
+            </table>
+
+            <nav class="pagination" aria-label="Table navigation">
+                <div class="pagination-info">
+                    <span class="current-page">1 -</span>
+                    <span class="total-pages">5 of 56</span>
+                </div>
+                <div class="pagination-controls">
+                    <span class="page-text">The page you're on</span>
+                    <select class="page-select" aria-label="Select page number">
+                        <option value="1">1</option>
+                    </select>
+                    <div class="pagination-divider" aria-hidden="true"></div>
+                    <button class="nav-btn prev" aria-label="Previous page"></button>
+                    <button class="nav-btn next" aria-label="Next page"></button>
+                </div>
+            </nav>
+        </div>
+    </section>
+</main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const tableBody = document.getElementById("productTableBody");
+        const currentPageSpan = document.querySelector(".current-page");
+        const totalPagesSpan = document.querySelector(".total-pages");
+        const prevButton = document.querySelector(".nav-btn.prev");
+        const nextButton = document.querySelector(".nav-btn.next");
+        const pageSelect = document.querySelector(".page-select");
+
+        let token = sessionStorage.getItem("token");
+        let user = sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")) : null;
+
+        if (!token || !user) {
+            alert('Bạn cần đăng nhập để sử dụng chức năng này');
+            window.location.href = '/admin/login';
+        }
+
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
+
+        let currentPage = 1;
+        const productsPerPage = 20;
+        let totalProducts = 0;
+        let totalPages = 0;
+
+        function fetchProducts(page = 1) {
+            fetch(`/admin/api/get-all-products?page=${page}&limit=${productsPerPage}`, { method: "GET", headers })
+                .then(response => response.json().then(data => response.ok ? data : Promise.reject(data)))
+                .then(({ products, total }) => {
+                    totalProducts = total;
+                    totalPages = Math.ceil(totalProducts / productsPerPage);
+                    renderProducts(products);
+                    updatePagination();
+                })
+                .catch(error => {
+                    console.error("Lỗi:", error);
+                    tableBody.innerHTML = `<tr><td colspan="8">Không thể tải danh sách sản phẩm.</td></tr>`;
+                });
+        }
+
+        function renderProducts(products) {
+            tableBody.innerHTML = "";
+            if (products.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="8">Không có sản phẩm nào.</td></tr>`;
+                return;
+            }
+
+            products.forEach((product) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td><img class="list-product-img" src="${product.hinh || '../lib/img/img_product.png'}" alt=""></td>
+                    <td>${formatCurrency(product.gia)}</td>
+                    <td>${product.gia_km ? formatCurrency(product.gia_km) : '-'}</td>
+                    <td>${product.ten_sp}</td>
+                    <td>${product.id_loai || '-'}</td>
+                    <td>${product.an_hien === 1 ? '<span class="status-completed">Available</span>' : '<span class="status-pending">Hidden</span>'}</td>
+                    <td>${formatDate(product.ngay)}</td>
+                    <td><a href="/admin/adminproduct/editproduct?id=${product.id}"><button class="view-btn">Edit</button></a></td>
+                    <td><button class="delete-btn view-btn" onclick="deleteProduct(${product.id})">Delete</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function updatePagination() {
+            currentPageSpan.textContent = `Trang ${currentPage}`;
+            totalPagesSpan.textContent = `Tổng ${totalPages}`;
+
+            prevButton.disabled = currentPage === 1;
+            nextButton.disabled = currentPage === totalPages;
+
+            pageSelect.innerHTML = "";
+            for (let i = 1; i <= totalPages; i++) {
+                const option = document.createElement("option");
+                option.value = i;
+                option.textContent = `Trang ${i}`;
+                if (i === currentPage) {
+                    option.selected = true;
+                }
+                pageSelect.appendChild(option);
+            }
+        }
+
+        function deleteProduct(id) {
+            if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
+
+            fetch(`/admin/api/delete-product/${id}`, {
+                method: "DELETE",
+                headers: headers
+            })
+                .then(response => response.json().then(data => response.ok ? data : Promise.reject(data)))
+                .then(() => {
+                    alert("Sản phẩm đã được xóa thành công!");
+                    fetchProducts(currentPage);
+                })
+                .catch(error => {
+                    alert(error.thong_bao || "Lỗi khi xóa sản phẩm.");
+                });
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString("vi-VN") + " lúc " + date.toLocaleTimeString("vi-VN");
+        }
+
+        prevButton.addEventListener("click", function () {
+            if (currentPage > 1) {
+                currentPage--;
+                fetchProducts(currentPage);
+            }
+        });
+
+        nextButton.addEventListener("click", function () {
+            if (currentPage < totalPages) {
+                currentPage++;
+                fetchProducts(currentPage);
+            }
+        });
+
+        pageSelect.addEventListener("change", function (event) {
+            currentPage = Number(event.target.value);
+            fetchProducts(currentPage);
+        });
+
+        window.deleteProduct = deleteProduct;
+
+        fetchProducts();
+    });
+</script>

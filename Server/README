@@ -1,0 +1,39 @@
+/project-folder
+│── /config
+│   ├── db.js            // Kết nối MySQL
+│   ├── apiConfig.js     // Quản lý URL API
+│── /routes
+│   ├── authRoutes.js    // Route đăng nhập, đăng ký, đổi mật khẩu
+│   ├── productRoutes.js // Route sản phẩm
+|   |── categoryRoutes.js // Route danh mục
+│   ├── userRoutes.js    // Route user
+│── /controllers
+│   ├── authController.js
+│   ├── categoryController.js
+│   ├── productController.js
+│   ├── userController.js
+│── /middlewares
+│   ├── authMiddleware.js // Middleware JWT
+│   ├── errorMiddleware.js // Middleware xử lý lỗi
+│── /services
+│   ├── mailService.js   // Gửi email
+│   ├── userService.js   // Xử lý logic user
+│── /views
+│── /layouts
+│   ├── main.ejs         // Layout chính
+│── /pages
+│   ├── trangchu.ejs     // Trang chủ
+│   ├── dangky.ejs       // Đăng ký
+│   ├── dangnhap.ejs     // Đăng nhập
+│   ├── dangxuat.ejs     // Đăng xuất
+│   ├── details.ejs      // Chi tiết sản phẩm
+│   ├── doipass.ejs      // Đổi mật khẩu
+│   ├── loai.ejs         // Sản phẩm theo loại
+│   ├── quenpass.ejs     // Quên mật khẩu
+│── /partials
+│   ├── header.ejs       // Header (menu, navigation)
+│   ├── footer.ejs       // Footer (chân trang)
+│── /public              // File tĩnh (CSS, JS, images)
+│── .env                 // Biến môi trường
+│── server.js            // Server chính
+│── package.json

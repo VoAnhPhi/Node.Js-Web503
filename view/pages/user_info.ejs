@@ -1,0 +1,135 @@
+<div class="container">
+    <div class="account-container">
+        <div class="account-sidebar">
+            <div class="profile-info">
+                <h2></h2>
+                <p></p>
+            </div>
+
+            <div class="account-menu-group">
+                <div class="account-item">
+                    <h3>Tài khoản</h3>
+                </div>
+                <ul class="account-menu">
+                    <li class="active"><a href="#">Thông tin cá nhân</a></li>
+                    <li><a href="/doipass">Đổi mật khẩu</a></li>
+                    <li><a href="#">Thông tin thanh toán</a></li>
+                    <li><a href="#">Xóa tài khoản</a></li>
+                    <li><a href="#" class="logout">Đăng xuất</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="account-content">
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        let user = JSON.parse(sessionStorage.getItem('user'));
+        let obj = $('.account-content');
+
+        if (user == null) {
+            obj.html(`
+            <div class="account-content">
+                <h1>BẠN CHƯA ĐĂNG NHẬP</h1>
+                <hr class="custom-line">
+                <a style="color: #001F3B; text-decoration: underline;" href="/dang_nhap"> Đăng nhập ngay </a>
+            </div>
+        `);
+        } else {
+            $('.logout').click(function () {
+                sessionStorage.removeItem("token");
+                sessionStorage.removeItem("user");
+                document.location = "/";
+            });
+
+            obj.html(`
+            <div class="account-content">
+                <h1>THÔNG TIN CÁ NHÂN</h1>
+                <hr class="custom-line">
+                <form class="profile-form" id="profileForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fullname">Họ và tên</label>
+                            <input type="text" id="fullname" name="fullname" value="${user.ho_ten}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Số điện thoại</label>
+                            <input type="tel" id="phone" name="phone" value="${user.dien_thoai || ''}" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" value="${user.email}" required>
+                        </div>
+                         <div class="form-group">
+                            <label for="phone">Địa chỉ</label>
+                            <input type="tel" id="dia_chi" name="dia_chi" value="${user.dia_chi || ''}" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-update">Cập nhật</button>
+                </form>
+                <b class="m-3" id="thong_bao" style="color:red"></b>
+            </div>
+        `);
+
+            // Thêm sự kiện submit cho form
+            $('#profileForm').submit(function (event) {
+                event.preventDefault();
+
+                // Lấy dữ liệu từ form
+                const updatedData = {
+                    id: user.id,
+                    ho_ten: $('#fullname').val(),
+                    email: $('#email').val(),
+                    dien_thoai: $('#phone').val(),
+                    dia_chi: $('#dia_chi').val()
+                };
+                console.log("Dữ liệu gửi lên:", updatedData);
+
+                // Kiểm tra dữ liệu hợp lệ
+                if (!updatedData.ho_ten || !updatedData.email || !updatedData.dien_thoai) {
+                    alert("Vui lòng nhập đầy đủ thông tin.");
+                    return;
+                }
+
+                // Gửi dữ liệu cập nhật lên server
+                const url = `http://localhost:5000/api/auth/cap_nhat`;
+                const opt = {
+                    method: "PUT",
+                    body: JSON.stringify(updatedData),
+                    headers: { "Content-Type": "application/json" }
+                };
+
+                fetch(url, opt)
+                    .then(res => {
+                        console.log("Response:", res);
+                        if (!res.ok) throw new Error("Lỗi khi cập nhật tài khoản.");
+                        return res.json();
+                    })
+                    .then(data => {
+                        console.log("Cập nhật thành công:", data);
+                        document.querySelector("#thong_bao").innerText = data.thong_bao;
+
+                        // Cập nhật thông tin trong sessionStorage
+                        user.ho_ten = updatedData.ho_ten;
+                        user.email = updatedData.email;
+                        user.dien_thoai = updatedData.dien_thoai;
+                        user.dia_chi = updatedData.dia_chi;
+                        sessionStorage.setItem("user", JSON.stringify(user));
+
+                        // Hiển thị thông báo thành công và làm mới giao diện sau vài giây
+                        setTimeout(() => {
+                            location.reload();
+                        }, 3000);
+                    })
+                    .catch(err => {
+                        console.error("Lỗi:", err);
+                        document.querySelector("#thong_bao").innerText = "Cập nhật thất bại. Vui lòng thử lại.";
+                    });
+            });
+        }
+    });
+</script>

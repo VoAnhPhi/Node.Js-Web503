@@ -1,0 +1,98 @@
+<main class="main-content">
+    <header class="header-section">
+        <div>
+            <h1 class="page-title">Login admin</h1>
+            <p class="page-subtitle">View all status from the dashboard</p>
+        </div>
+
+        <div class="user-profile">
+            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/8bb0745711ce6133076d46e9679fb39046eda8008659709e00d84e588f01f7b1?placeholderIfAbsent=true&apiKey=c01b0b1f77f44db1a01eba6bb534c16f"
+                alt="User Profile" class="profile-image">
+            <div class="profile-info">
+                <span class="profile-name">Nguyen Phuong</span>
+                <span class="profile-email">dsun.agency@gmail.com</span>
+            </div>
+            <button aria-label="User menu" class="profile-menu">
+                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/d06db6e006919a5ea636ac00218298dc8ea375846d2fc7f39ffddf2b532ee929?placeholderIfAbsent=true&apiKey=c01b0b1f77f44db1a01eba6bb534c16f"
+                    alt="">
+            </button>
+        </div>
+    </header>
+
+    <div class="loginModal --modalRegister">
+        <div class="close-btn">
+            <img src="img/icon/close-icon.svg" alt="">
+        </div>
+        <div class="loginModal__heading">
+            <img src="img/logo-modal.svg" alt="">
+        </div>
+        <div class="loginModal__content">
+            <div class="content">
+            </div>
+            <form class="loginMainForm" name="frmdn">
+                <div class="phone">
+                    <label for="phone">Email*</label>
+                    <input type="email" id="phone" name="email" placeholder="VD: abc@gmail.com" required>
+                </div>
+                <div class="password">
+                    <label for="password">Nhập mật khẩu*</label>
+                    <input type="password" id="password" name="mat_khau"
+                        placeholder="Nhập mật khẩu của bạn ít nhất 6 ký tự" required>
+                </div>
+                <div class="select-privacy">
+                    <div class="forget-password">
+                    </div>
+                </div>
+                <div class="button">
+                    <button type="submit" name="btn">Xác nhận</button>
+                </div>
+                <b class="m-3" id="thong_bao" style="color:red"></b>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const frm = document.forms['frmdn'];
+        frm.btn.onclick = function (event) {
+            event.preventDefault();
+
+            const url = `http://localhost:5000/admin/adminlogin`;
+            const data = {
+                email: frm.email.value,
+                mat_khau: frm.mat_khau.value
+            };
+
+            if (!data.email || !data.mat_khau) {
+                alert("Chưa nhập đủ thông tin");
+                return;
+            }
+
+            const opt = {
+                method: "POST",
+                body: JSON.stringify(data),
+                headers: { "Content-type": "application/json" }
+            };
+
+            fetch(url, opt)
+                .then(res => {
+                    if (!res.ok) throw new Error(`Lỗi HTTP! Status: ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.thong_bao!=undefined) {
+                        document.querySelector("#thong_bao").innerHTML = data.thong_bao;
+                        return;
+                    }
+                    let token = data.token;
+                    let user = data.info;
+                    sessionStorage.setItem("token", token);
+                    sessionStorage.setItem("user", JSON.stringify(user));
+                    document.location = "/admin";
+                })
+                .catch(err => {
+                    console.error("Lỗi khi đăng nhập:", err);
+                });
+        };
+
+    </script>
+</main>

@@ -1,0 +1,214 @@
+<main class="main-content">
+    <div class="add-product-wrapper">
+        <header class="add-product-header">
+            <h1 class="add-product-title">Edit Product</h1>
+            <button type="submit" class="add-product-save-btn" id="saveProductBtn">
+                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/ace380a4e6c699359f5dda7129c4479965ce48f6f711bc8bae14781f41cb0093"
+                    alt="Save Icon" width="18" height="18" />
+                Save
+            </button>
+        </header>
+
+        <form id="editProductForm" class="add-product-form">
+            <div class="add-product-image-section">
+                <div class="add-product-image-container">
+                    <label for="mainImage" class="add-product-image-label">Image</label>
+                    <input type="file" id="mainImage" class="visually-hidden" accept="image/*" />
+                    <button type="button" class="add-product-upload-btn" id="uploadMainImage">Upload New Image</button>
+                    <img id="previewMainImage" class="list-product-img" src="" alt="Preview Image"
+                        style="display: none;" />
+                    <p id="imageUrlText"></p>
+                </div>
+            </div>
+
+            <div class="add-product-input-wrapper">
+                <label for="productName" class="add-product-input-label">Product Name</label>
+                <input type="text" id="productName" class="add-product-input" required />
+            </div>
+
+            <div class="add-product-input-wrapper">
+                <label for="productPrice" class="add-product-input-label">Price</label>
+                <input type="number" id="productPrice" class="add-product-input" required />
+            </div>
+
+            <div class="add-product-input-wrapper">
+                <label for="productDiscountPrice" class="add-product-input-label">Discount Price</label>
+                <input type="number" id="productDiscountPrice" class="add-product-input" />
+            </div>
+
+            <div class="add-product-input-wrapper">
+                <label for="productCategory" class="add-product-input-label">Category</label>
+                <select id="productCategory" class="add-product-select" required>
+                    <option value="">Select Category</option>
+                </select>
+            </div>
+
+            <div class="add-product-input-wrapper">
+                <label for="productStatus" class="add-product-input-label">Status</label>
+                <select id="productStatus" class="add-product-select">
+                    <option value="1">Available</option>
+                    <option value="0">Hidden</option>
+                </select>
+            </div>
+
+            <button type="submit" class="add-product-submit-btn">Save Changes</button>
+        </form>
+
+        <p id="productMessage" class="add-product-message"></p>
+    </div>
+</main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let token = sessionStorage.getItem('token');
+        let user = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')) : null;
+
+        if (!token || !user) {
+            alert('Bạn cần đăng nhập để sử dụng chức năng này');
+            window.location.href = '/admin/login';
+        }
+
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
+
+        const productForm = document.getElementById("editProductForm");
+        const messageBox = document.getElementById("productMessage");
+        const categorySelect = document.getElementById("productCategory");
+        const mainImageInput = document.getElementById("mainImage");
+        const previewMainImage = document.getElementById("previewMainImage");
+        const uploadMainImageBtn = document.getElementById("uploadMainImage");
+        let uploadedImageFile = null;
+        let productId = new URLSearchParams(window.location.search).get("id");
+
+        // Lấy danh mục từ API
+        function fetchCategories(selectedCategory) {
+            fetch("/admin/api/get-all-category", { method: "GET", headers })
+                .then(response => response.json().then(data => response.ok ? data : Promise.reject(data)))
+                .then(categories => {
+                    categorySelect.innerHTML = "";
+                    categories.forEach(category => {
+                        const option = document.createElement("option");
+                        option.value = category.id;
+                        option.textContent = category.ten_loai;
+                        if (category.id == selectedCategory) option.selected = true;
+                        categorySelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error(error);
+                    messageBox.textContent = "Không thể tải danh mục.";
+                    messageBox.style.color = "red";
+                });
+        }
+
+        // Lấy thông tin sản phẩm từ API bằng ID
+        function fetchProductData() {
+            fetch(`/admin/api/get-all-products-by/${productId}`, { method: "GET", headers })
+                .then(response => response.json().then(data => response.ok ? data : Promise.reject(data)))
+                .then(product => {
+                    document.getElementById("productName").value = product.ten_sp;
+                    document.getElementById("productPrice").value = product.gia;
+                    document.getElementById("productDiscountPrice").value = product.gia_km || "";
+                    document.getElementById("productStatus").value = product.an_hien;
+                    previewMainImage.src = product.hinh;
+                    previewMainImage.style.display = "block";
+
+                    fetchCategories(product.id_loai);
+                })
+                .catch(error => {
+                    messageBox.textContent = error.message || "Lỗi khi tải sản phẩm.";
+                    messageBox.style.color = "red";
+                });
+        }
+
+        // Khi chọn ảnh, chỉ lưu file, không upload ngay
+        uploadMainImageBtn.addEventListener("click", function () {
+            mainImageInput.click();
+        });
+
+        mainImageInput.addEventListener("change", function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            uploadedImageFile = file;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewMainImage.src = e.target.result;
+                previewMainImage.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Upload ảnh khi có ảnh mới
+        function uploadImage(callback) {
+            if (!uploadedImageFile) {
+                callback(previewMainImage.src);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("image", uploadedImageFile);
+
+            fetch("/admin/upload-image", {
+                method: "POST",
+                body: formData,
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+                .then(response => response.json().then(data => response.ok ? data : Promise.reject(data)))
+                .then(data => callback(data.imageUrl))
+                .catch(error => {
+                    console.error("Lỗi khi upload ảnh:", error);
+                    callback(previewMainImage.src);
+                });
+        }
+
+        // Gửi dữ liệu cập nhật sản phẩm
+        productForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const productName = document.getElementById("productName").value.trim();
+            const productPrice = document.getElementById("productPrice").value;
+            const productDiscountPrice = document.getElementById("productDiscountPrice").value;
+            const productCategory = categorySelect.value;
+            const productStatus = document.getElementById("productStatus").value;
+
+            if (!productName || !productPrice || !productCategory) {
+                messageBox.textContent = "Vui lòng nhập đầy đủ thông tin.";
+                messageBox.style.color = "red";
+                return;
+            }
+
+            // Upload ảnh trước khi gửi sản phẩm
+            uploadImage(function (imageUrl) {
+                const productData = {
+                    ten_sp: productName,
+                    gia: productPrice,
+                    gia_km: productDiscountPrice || null,
+                    id_loai: productCategory,
+                    an_hien: Number(productStatus),
+                    hinh: imageUrl
+                };
+
+                fetch(`/admin/api/update-product/${productId}`, {
+                    method: "PUT",
+                    headers: headers,
+                    body: JSON.stringify(productData)
+                })
+                    .then(response => response.json().then(data => response.ok ? data : Promise.reject(data)))
+                    .then(() => {
+                        messageBox.textContent = "Sản phẩm đã được cập nhật!";
+                        messageBox.style.color = "green";
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        messageBox.textContent = error.thong_bao || "Lỗi khi cập nhật sản phẩm.";
+                        messageBox.style.color = "red";
+                    });
+            });
+        });
+
+        fetchProductData();
+    });
+</script>

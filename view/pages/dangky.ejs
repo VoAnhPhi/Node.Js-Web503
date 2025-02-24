@@ -1,0 +1,96 @@
+<div class="container">
+    <div class="registerModal --modalRegister">
+        <div class="close-btn">
+            <img src="img/icon/close-icon.svg" alt="Close Icon">
+        </div>
+        <div class="registerModal__heading">
+            <img src="img/logo-modal.svg" alt="Logo">
+        </div>
+        <div class="registerModal__content">
+            <div class="content">
+                <p>Đăng ký</p>
+                <p class="description">GBOX luôn sẵn sàng với căn hộ đầy đủ tiện ích cho bạn!</p>
+            </div>
+            <form name="frmdk" class="registerMainForm">
+                <div class="user-name">
+                    <label for="name">Họ và tên*</label>
+                    <input type="text" id="name" name="ho_ten" placeholder="Nguyễn Văn A" required>
+                </div>
+                <div class="phone">
+                    <label for="phone">Email*</label>
+                    <input type="email" id="phone" name="email" placeholder="VD: abc@gmail.com" required>
+                </div>
+                <div class="password">
+                    <label for="password">Nhập mật khẩu*</label>
+                    <input type="password" name="mat_khau" placeholder="Nhập mật khẩu của bạn ít nhất 6 ký tự" required>
+                </div>
+                <div class="password">
+                    <label for="password">Nhập lại mật khẩu*</label>
+                    <input type="password" name="go_lai_mat_khau" placeholder="Nhập mật khẩu của bạn ít nhất 6 ký tự"
+                        required>
+                </div>
+                <div class="select-privacy">
+                    <input type="checkbox" id="privacy" required>
+                    <label for="privacy"> Tôi đồng ý với Chính sách Bảo mật và Các Điều khoản.</label>
+                </div>
+                <div class="button">
+                    <button type="submit" name="btn">Đăng Ký</button>
+                    <div class="sub-btn">
+                        <span>Bạn đã có tài khoản</span>
+                        <a style="color: #001F3B; text-decoration: underline;" href="/dang_nhap">Đăng nhập</a>
+                    </div>
+                </div>
+                <b class="m-3" id="thong_bao" style="color:red"></b>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    const frm = document.forms['frmdk'];
+    frm.btn.onclick = function () {
+        event.preventDefault();
+        const data = {
+            ho_ten: frm.ho_ten.value,
+            email: frm.email.value,
+            mat_khau: frm.mat_khau.value,
+            go_lai_mat_khau: frm.go_lai_mat_khau.value
+        };
+
+        if (data.ho_ten == "" || data.mat_khau == "" || data.go_lai_mat_khau == "") {
+            alert("Chưa nhập đủ thông tin");
+            return false;
+        }
+
+        if (data.mat_khau != data.go_lai_mat_khau) {
+            alert("Mật khẩu nhập lại không trùng khớp");
+            return false;
+        }
+
+        const opt = {
+            method: "post",
+            body: JSON.stringify(data),
+            headers: { "Content-type": "application/json" }
+        };
+
+        const url = `http://localhost:5000/api/auth/dangky`;
+
+        fetch(url, opt).then(res => {
+            console.log("res=", res);
+            if (res.ok == false) throw new Error(res.statusText);
+            return res.json();
+        })
+            .then(data => {
+                console.log("data=", data);
+                document.querySelector("#thong_bao").innerText = data.thong_bao;
+                if (data.sqlMessage != undefined)
+                    document.querySelector("#thong_bao").innerText += ": " + data.sqlMessage;
+                else
+                    setTimeout(() => {
+                        window.location.href = "/"; // Hoặc trang bạn muốn điều hướng tới
+                    }, 3000)
+            })
+            .catch(err => {
+                console.log(`Lỗi: ${err}`);
+            });
+    };
+</script>

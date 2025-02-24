@@ -1,0 +1,169 @@
+<main class="main-content">
+    <header class="header-section">
+        <div>
+            <h1 class="page-title">Services</h1>
+            <p class="page-subtitle">Service</p>
+        </div>
+
+        <div class="user-profile">
+            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/8bb0745711ce6133076d46e9679fb39046eda8008659709e00d84e588f01f7b1?placeholderIfAbsent=true&apiKey=c01b0b1f77f44db1a01eba6bb534c16f"
+                alt="User Profile" class="profile-image">
+            <div class="profile-info">
+                <span class="profile-name">Nguyen Phuong</span>
+                <span class="profile-email">dsun.agency@gmail.com</span>
+            </div>
+            <button aria-label="User menu" class="profile-menu">
+                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/d06db6e006919a5ea636ac00218298dc8ea375846d2fc7f39ffddf2b532ee929?placeholderIfAbsent=true&apiKey=c01b0b1f77f44db1a01eba6bb534c16f"
+                    alt="">
+            </button>
+        </div>
+    </header>
+    <nav class="booking-nav" aria-label="Booking navigation">
+        <div class="booking-container-product">
+            <div class="tab-group-product">
+                <a href="#booking-list" class="tab-link tab-link-black active" aria-current="page">
+                    <div class="active-indicator" aria-hidden="true"></div>
+                    <span class="tab-text">List services</span>
+                </a>
+                <button class="add-product-btn" tabindex="0">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/b633fdb76f5b691270eead81d21f22c6900577decef1c1f6a355bcc914dbc0e0?placeholderIfAbsent=true&apiKey=c01b0b1f77f44db1a01eba6bb534c16f"
+                        alt="" class="add-icon" />
+                    <span><a class="add-product-btn--link" href="/admin/admincategory/addcategory">Add New
+                            Service</a></span>
+                </button>
+
+            </div>
+        </div>
+    </nav>
+    <section class="booking-section" aria-label="Booking List">
+        <div class="table-container">
+            <table class="booking-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Tên danh mục</th>
+                        <th scope="col">Ngày tạo</th>
+                        <th scope="col">Trạng thái</th>
+                        <th scope="col" colspan="2">Tương tác</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+
+            <nav class="pagination" aria-label="Table navigation">
+                <div class="pagination-info">
+                    <span class="current-page">1 -</span>
+                    <span class="total-pages">5 of 56</span>
+                </div>
+                <div class="pagination-controls">
+                    <span class="page-text">The page you're on</span>
+                    <select class="page-select" aria-label="Select page number">
+                        <option value="1">1</option>
+                    </select>
+                    <div class="pagination-divider" aria-hidden="true"></div>
+                    <button class="nav-btn prev" aria-label="Previous page"></button>
+                    <button class="nav-btn next" aria-label="Next page"></button>
+                </div>
+            </nav>
+        </div>
+    </section>
+</main>
+
+<script>
+    let token = sessionStorage.getItem("token");
+    let user = sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")) : null;
+
+    if (!token || !user) {
+        alert('Bạn cần đăng nhập để sử dụng chức năng này');
+        window.location.href = '/admin/login';
+    }
+
+    const API_BASE_URL = "http://localhost:5000/admin/api";
+
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    };
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const tableBody = document.querySelector(".booking-table tbody");
+
+        // Hàm fetch dữ liệu chung
+        function fetchData(url, options, callback) {
+            fetch(url, options)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Lỗi ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => callback(data))
+                .catch(error => {
+                    console.error("Lỗi:", error);
+                    alert("Đã xảy ra lỗi khi tải dữ liệu.");
+                });
+        }
+
+        // Hàm lấy danh sách danh mục
+        function fetchCategories() {
+            fetchData(`${API_BASE_URL}/get-all-category`, { method: "GET", headers }, renderCategories);
+        }
+
+        // Hiển thị danh mục vào bảng
+        function renderCategories(categories) {
+            tableBody.innerHTML = "";
+
+            if (!categories.length) {
+                tableBody.innerHTML = `<tr><td colspan="6">Không có danh mục nào.</td></tr>`;
+                return;
+            }
+
+            categories.forEach(category => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${category.id}</td>
+                    <td class="booking-name-studio">${category.ten_loai}</td>
+                    <td>${new Date(category.create_at).toLocaleDateString()}</td>
+                    <td>${category.an_hien === 1 ? "Hiện" : "Ẩn"}</td>
+                    <td><button class="view-btn" onclick="editCategory(${category.id})">Edit</button></td>
+                    <td><button class="view-btn" onclick="deleteCategory(${category.id})">Delete</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Xóa danh mục
+        function deleteCategory(id) {
+            if (!confirm("Bạn có chắc chắn muốn xóa danh mục này?")) return;
+
+            fetchData(`${API_BASE_URL}/delete-category/${id}`, { method: "DELETE", headers }, function () {
+                alert("Danh mục đã được xóa!");
+                fetchCategories();
+            });
+        }
+
+        // Chuyển hướng trang sửa danh mục
+        window.editCategory = function (id) {
+            window.location.href = `/admin/admincategory/editcategory?id=${id}`;
+        };
+
+        // Gán sự kiện xóa vào global scope
+        window.deleteCategory = deleteCategory;
+
+        // Gọi API lấy danh mục khi trang load
+        fetchCategories();
+
+        // Sự kiện điều hướng phân trang
+        document.querySelector(".nav-btn.prev").addEventListener("click", function () {
+            console.log("Chuyển về trang trước");
+            // Xử lý logic chuyển trang trước
+        });
+
+        document.querySelector(".nav-btn.next").addEventListener("click", function () {
+            console.log("Chuyển sang trang tiếp theo");
+            // Xử lý logic chuyển trang tiếp theo
+        });
+    });
+</script>

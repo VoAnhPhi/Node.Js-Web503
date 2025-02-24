@@ -1,0 +1,126 @@
+<div class="home_page">
+    <div class="home_page-nav">
+        <div class="container">
+            <ul class="home_page-nav-list" id="menu">
+                <li class="nav-item" style="font-size: 18px; align-items: center; display: inline-flex;">
+                    <a class="nav-link" href="/">Trở về trang chủ </a>
+                    <img src="/img/icon/arrow-right-2.svg" alt="">
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="news_flex">
+        <div class="news-container">
+            <div id="tin-tuc-detail">
+                <!-- Nội dung tin tức sẽ được load ở đây -->
+            </div>
+        </div>
+        <aside class="sidebar">
+            <section class="hot-news" id="hot-news">
+                <h3>Tin tức hot</h3>
+            </section>
+        </aside>
+    </div>
+</div>
+
+<div class="container">
+    <div class="news_flex">
+        <!-- Content -->
+        <div class="content">
+            <section class="news" id="featured-news">
+                <h2>Tin tức mới nhất</h2>
+            </section>
+        </div>
+        <!-- Sidebar -->
+        <aside class="sidebar">
+        </aside>
+    </div>
+</div>
+
+<script>
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+    let id = getQueryParam("id")
+    let url = `/api/news/chi_tiet/${id}`;
+    fetch(url)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Lỗi mạng hoặc không tìm thấy tin tức');
+            }
+            return res.json();
+        })
+        .then(data => {
+            // Kiểm tra nếu data có giá trị (ví dụ: data != null)
+            if (!data) {
+                document.getElementById('tin-tuc-detail').innerHTML = '<p>Không tìm thấy tin tức.</p>';
+                return;
+            }
+            // Hiển thị dữ liệu nhận được từ API lên trang
+            const tinTucHTML = `
+          <h1 class="news-title">${data.tieu_de}</h1>
+          <p class="news-date">${data.ngay}</p>
+          <img src="${data.hinh}" alt="${data.tieu_de}">
+          <p class="news-description">${data.mo_ta}</p>
+          <div class="news-content">${data.noi_dung}</div>
+        `;
+            document.getElementById('tin-tuc-detail').innerHTML = tinTucHTML;
+        })
+        .catch(error => {
+            console.error('Có lỗi xảy ra:', error);
+            document.getElementById('tin-tuc-detail').innerHTML = `<p>Có lỗi xảy ra khi tải tin tức: ${error.message}</p>`;
+        });
+
+
+    // 2. Fetch danh sách tin tức hot
+    fetch('http://localhost:5000/api/news/tin-tuc/hot')
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(newsList => {
+            const newsListContainer = document.querySelector('#hot-news');
+            // Xóa nội dung mặc định nếu có
+            newsList.forEach(item => {
+                newsListContainer.innerHTML += `
+                <article>
+                    <img src="${item.hinh}" alt="${item.tieu_de}">
+                    <h3>${item.tieu_de}</h3>
+                    <p>${item.mo_ta}</p>
+                    <a href="chi_tiet?id=${item.id}">Đọc thêm</a>
+                </article>
+                `;
+            });
+        })
+        .catch(err => console.error('Lỗi khi fetch danh sách tin tức:', err));
+    // 3. Fetch tin tức nổi bật (sử dụng API /api/tin_tuc/moi)
+    fetch('http://localhost:5000/api/news/tin-tuc/moi')
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(featuredNews => {
+            const featuredContainer = document.querySelector('#featured-news');
+            // Xóa nội dung mặc định nếu có
+            if (featuredNews.length > 0) {
+                featuredNews.forEach(item => {
+                    featuredContainer.innerHTML += `
+                        <article>
+                            <img src="${item.hinh}" alt="${item.tieu_de}">
+                            <div>
+                                <h3>${item.tieu_de}</h3>
+                                <p>${item.mo_ta}</p>
+                                <a href="chi_tiet?id=${item.id}">Đọc thêm</a>
+                            </div>
+                        </article>
+                        `;
+                });
+            } else {
+                featuredContainer.innerHTML = '<p> Không có tin tức nào để hiển thị </p>';
+            }
+        })
+        .catch(err => console.error('Lỗi khi fetch tin tức nổi bật:', err));
+</script>
