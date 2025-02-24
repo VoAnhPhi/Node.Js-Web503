@@ -1,0 +1,148 @@
+<!-- Phần tin tức hot ở đầu trang -->
+<div class="container">
+    <div class="top-news-section">
+        <!-- Danh mục bên trái -->
+        <div class="top-categories">
+            <h3>Danh mục</h3>
+            <ul id="menu">
+            </ul>
+        </div>
+        <!-- Tin tức hot bên phải -->
+        <div class="top-hot-news" id="top-hot-news">
+            <h2>Tin Tức Nóng Trong Nước</h2>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="news_flex">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <section class="hot-news" id="hot-news">
+                <h3>Tin tức hot</h3>
+            </section>
+        </aside>
+
+        <!-- Content -->
+        <div class="content">
+            <section class="news" id="featured-news">
+                <h2>Tin tức mới nhất</h2>
+            </section>
+
+            <section class="business" id="business-news">
+                <h2>Sức khỏe</h2>
+            </section>
+        </div>
+    </div>
+</div>
+<script>
+    // 1. Fetch danh mục tin (loại tin)
+    fetch('http://localhost:5000/api/news/cateNews')
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(loai_tin_arr => {
+            const menu = document.querySelector("#menu");
+            loai_tin_arr.forEach(loai => {
+                menu.innerHTML += `<li><a href="loai_tin?id=${loai.id}">${loai.ten_loai}</a></li>`;
+            });
+        })
+        .catch(err => console.error('Lỗi khi fetch danh mục:', err));
+
+    // 2. Fetch danh sách tin tức top + hot new (sử dụng API /api/tin_tuc/trong_nuoc)
+    fetch('http://localhost:5000/api/news/tin-tuc/trong-nuoc')
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(newsList => {
+            const newsListContainer = document.querySelector('#top-hot-news');
+            // Xóa nội dung mặc định nếu có
+            newsList.forEach(item => {
+                newsListContainer.innerHTML += `
+                <article>
+                    <img src="${item.hinh}" alt="${item.tieu_de}">
+                    <div>
+                        <h3>${item.tieu_de}</h3>
+                        <p>${item.mo_ta}</p>
+                        <a href="chi_tiet?id=${item.id}">Đọc thêm</a>
+                    </div>
+                </article>
+                `;
+            });
+        })
+        .catch(err => console.error('Lỗi khi fetch danh sách tin tức:', err));
+    // 3. Fetch danh sách tin tức (sử dụng API /api/tin_tuc/hot)
+    fetch('http://localhost:5000/api/news/tin-tuc/hot')
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(newsList => {
+            const newsListContainer = document.querySelector('#hot-news');
+            // Xóa nội dung mặc định nếu có
+            newsList.forEach(item => {
+                newsListContainer.innerHTML += `
+                <article>
+                    <h3>${item.tieu_de}</h3>
+                    <p>${item.mo_ta}</p>
+                    <a href="chi_tiet?id=${item.id}">Đọc thêm</a>
+                </article>
+                `;
+            });
+        })
+        .catch(err => console.error('Lỗi khi fetch danh sách tin tức:', err));
+
+    // 4. Fetch tin tức nổi bật (sử dụng API /api/tin_tuc/moi)
+    fetch('http://localhost:5000/api/news/tin-tuc/moi')
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(featuredNews => {
+            const featuredContainer = document.querySelector('#featured-news');
+            // Xóa nội dung mặc định nếu có
+            if (featuredNews.length > 0) {
+                featuredNews.forEach(item => {
+                    featuredContainer.innerHTML += `
+                        <article>
+                            <img src="${item.hinh}" alt="${item.tieu_de}">
+                            <div>
+                                <h3>${item.tieu_de}</h3>
+                                <p>${item.mo_ta}</p>
+                                <a href="chi_tiet?id=${item.id}">Đọc thêm</a>
+                            </div>
+                        </article>
+                        `;
+                });
+            } else {
+                featuredContainer.innerHTML = '<p> Không có tin tức nào để hiển thị </p>';
+            }
+        })
+        .catch(err => console.error('Lỗi khi fetch tin tức nổi bật:', err));
+
+    // 5. Fetch danh sách tin tức (sử dụng API /api/tin_tuc/suc_khoe)
+    fetch('http://localhost:5000/api/news/tin-tuc/suc-khoe')
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(newsList => {
+            const newsListContainer = document.querySelector('#business-news');
+            // Xóa nội dung mặc định nếu có
+            newsList.forEach(item => {
+                newsListContainer.innerHTML += `
+                 <article>
+                    <img src="${item.hinh}" alt="${item.tieu_de}">
+                    <div>
+                        <h3>${item.tieu_de}</h3>
+                        <p>${item.mo_ta}</p>
+                        <a href="chi_tiet?id=${item.id}">Đọc thêm</a>
+                    </div>
+                </article>
+                `;
+            });
+        })
+        .catch(err => console.error('Lỗi khi fetch danh sách tin tức:', err));
+</script>

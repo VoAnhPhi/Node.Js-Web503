@@ -1,0 +1,88 @@
+<div class="home_page">
+    <div class="home_page-nav">
+        <div class="container">
+            <ul class="home_page-nav-list" id="menu">
+                <!-- Danh mục sản phẩm sẽ được load vào đây -->
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Sản phẩm mới -->
+<div id="spmoi">
+    <div class="container">
+        <h2>Sản phẩm mới</h2>
+        <div id="product-grid">
+            <!-- Sản phẩm mới sẽ được load vào đây -->
+        </div>
+    </div>
+</div>
+
+<!-- Sản phẩm hot -->
+<div id="sphot">
+    <div class="container">
+        <h2>Sản phẩm hot</h2>
+        <div id="producthot-grid">
+            <!-- Sản phẩm hot sẽ được load vào đây -->
+        </div>
+    </div>
+</div>
+
+<script>
+    //  Hàm gọi API chung
+    async function fetchData(url) {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`Lỗi API ${url}`);
+            return await res.json();
+        } catch (error) {
+            console.error(` Lỗi khi gọi API ${url}:`, error);
+            return [];
+        }
+    }
+
+    //  Load danh mục sản phẩm vào body
+    async function loadCategories() {
+        const categories = await fetchData("http://localhost:5000/api/loai");
+        const menu = document.querySelector("#menu");
+
+        if (categories.length === 0) {
+            menu.innerHTML = "<li>Không có danh mục nào.</li>";
+            return;
+        }
+
+        menu.innerHTML = categories.map(loai => `
+            <li class="nav-item category-item">
+                <a class="nav-link" href="loai?id=${loai.id}">${loai.ten_loai}</a>
+            </li>
+        `).join("");
+    }
+
+    //  Render sản phẩm
+    function renderProducts(products) {
+        if (!Array.isArray(products) || products.length === 0) return "<p>Không có sản phẩm nào.</p>";
+        return products.map(sp => `
+            <div class="product-card">
+                <a href="detail?id=${sp.id}">${sp.ten_sp}</a>
+                <img src="${sp.hinh}" alt="${sp.ten_sp}" />
+                <p><del>${Number(sp.gia).toLocaleString('vi-en')} VNĐ</del></p>
+                <p class="price">${Number(sp.gia_km).toLocaleString('vi-en')} VNĐ</p>
+            </div>
+        `).join("");
+    }
+
+    //  Gọi API để lấy dữ liệu sản phẩm mới và hot
+    async function loadProducts() {
+        const spMoi = await fetchData("http://localhost:5000/api/products/spmoi");
+        document.getElementById("product-grid").innerHTML = renderProducts(spMoi);
+
+        const spHot = await fetchData("http://localhost:5000/api/products/sphot");
+        document.getElementById("producthot-grid").innerHTML = renderProducts(spHot);
+    }
+
+    //  Chạy khi trang tải xong
+    document.addEventListener("DOMContentLoaded", () => {
+        loadCategories();
+        loadProducts();
+    });
+</script>

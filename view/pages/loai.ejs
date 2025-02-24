@@ -1,0 +1,70 @@
+<div class="home_page-nav">
+    <div class="container">
+        <ul class="home_page-nav-list" id="menu">
+        </ul>
+    </div>
+</div>
+<div id="spmoi"></div>
+
+<script>
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+    fetch(`http://localhost:5000/api/loai`)
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(loai_arr => {
+            const menu = document.querySelector("#menu");
+            loai_arr.forEach(loai => {
+                menu.innerHTML += `
+                <li class="nav-item">
+                    <a class="nav-link" href="loai?id=${loai.id}">${loai.ten_loai}</a>
+                </li>`;
+            });
+        })
+        .catch(err => console.error(`Lỗi: ${err}`));
+        
+    const categoryId = getQueryParam("id");
+    fetch(`http://localhost:5000/api/loai/${categoryId}`)
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(sp_arr => {
+            const productGrid = document.querySelector("#product-grid");
+            const container = document.querySelector("#spmoi");
+
+            if (sp_arr.length === 0) {
+                productGrid.innerHTML = "<p>Không có sản phẩm nào trong loại này.</p>";
+                return;
+            }
+
+            let str = ""; // Tạo chuỗi HTML để chứa danh sách sản phẩm
+            sp_arr.forEach(sp => {
+                str += `
+                <div class="product-card">
+                    <a href="detail?id=${sp.id}">${sp.ten_sp}</a>
+                    <img src="${sp.hinh}" alt="${sp.ten_sp}" />
+                    <p><del>${sp.gia.toLocaleString('vi-en')} VNĐ</del></p>
+                    <p>${sp.gia_km.toLocaleString('vi-en')} VNĐ</p>
+                </div>`;
+            });
+
+            // Gán nội dung HTML cho container
+            container.innerHTML = `
+            <div class="container">
+                <h2>Sản phẩm theo loại</h2>
+                <div id="product-grid">
+                    ${str}
+                </div>
+            </div>`;
+        })
+        .catch(err => {
+            console.error(`Lỗi: ${err}`);
+            document.querySelector("#product-grid").innerHTML = "<p>Có lỗi xảy ra khi tải sản phẩm.</p>";
+        });
+
+</script>

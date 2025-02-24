@@ -1,0 +1,62 @@
+<div class="container">
+    <div class="loginModal --modalRegister">
+        <div class="close-btn">
+            <img src="img/icon/close-icon.svg" alt="">
+        </div>
+        <div class="loginModal__heading">
+            <img src="img/logo-modal.svg" alt="">
+        </div>
+        <div class="loginModal__content">
+            <div class="content">
+                <p>Quên Mật Khẩu</p>
+            </div>
+            <form class="loginMainForm" name="frmqp">
+                <div class="phone">
+                    <label for="phone">Nhập Email Của Bạn*</label>
+                    <input type="email" id="phone" name="email" placeholder="VD: abc@gmail.com" required>
+                </div>
+                <div class="button">
+                    <button type="submit" name="btn">Lấy Mật Khẩu Mới</button>
+                    <div class="sub-btn">
+                        <span>Bạn chưa có tài khoản</span>
+                        <a style="color: #001F3B; text-decoration: underline;" href="/dang_ky">Đăng ký</a>
+                    </div>
+                </div>
+                <b class="m-3" id="thong_bao" style="color:red"></b>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    // Quên pass
+    const frm = document.forms['frmqp'];
+    frm.btn.onclick = function () {
+        event.preventDefault();
+        const url = "http://localhost:5000/api/auth/quenmatkhau";
+        const data = { email: frm.email.value };
+        if (data.email == "") {
+            alert("Chưa nhập đủ thông tin");
+            return false;
+        }
+        const opt = {
+            method: "post",
+            body: JSON.stringify(data),
+            headers: { "Content-type": "application/json" }
+        };
+        fetch(url, opt)
+            .then(res => {
+                console.log("res=", res);
+                if (res.ok == false) throw new Error(res.statusText);
+                return res.json();
+            })
+            .then(data => {
+                console.log("data=", data);
+                document.querySelector("#thong_bao").innerText = data.thong_bao;
+                if (data.sqlMessage != undefined)
+                    document.querySelector("#thong_bao").innerText += ": " + data.sqlMessage;
+            })
+            .catch(err => {
+                console.log(`Lỗi: ${err}`);
+            });
+    };
+</script>

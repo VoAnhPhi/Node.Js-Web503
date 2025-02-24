@@ -1,0 +1,95 @@
+<main class="main-content">
+    <div class="add-product-wrapper">
+        <header class="add-product-header">
+            <h1 class="add-product-title">Thêm danh mục mới</h1>
+        </header>
+
+        <form id="addCategoryForm" class="add-product-form">
+            <div class="add-product-input-wrapper">
+                <label for="categoryName" class="add-product-input-label">Tên danh mục</label>
+                <input type="text" id="categoryName" class="add-product-input" placeholder="Nhập tên danh mục"
+                    required />
+            </div>
+
+            <div class="add-product-input-wrapper">
+                <label for="categoryStatus" class="add-product-input-label">Trạng thái</label>
+                <div class="add-product-select-wrapper">
+                    <select id="categoryStatus" class="add-product-select">
+                        <option value="1" selected>Hiển thị</option>
+                        <option value="0">Ẩn</option>
+                    </select>
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/5ce3312dee92806ec00e2d79ae205b9c41db31566e3ccaf3cc9023b17706835e?placeholderIfAbsent=true&apiKey=c01b0b1f77f44db1a01eba6bb534c16f"
+                        alt="" width="14" height="7" aria-hidden="true" />
+                </div>
+            </div>
+
+            <button type="submit" class="add-product-save-btn" id="saveCategoryBtn">
+                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/ace380a4e6c699359f5dda7129c4479965ce48f6f711bc8bae14781f41cb0093?placeholderIfAbsent=true&apiKey=c01b0b1f77f44db1a01eba6bb534c16f"
+                    alt="Save Icon" width="18" height="18" />
+                Lưu
+            </button>
+        </form>
+
+        <p id="categoryMessage" class="add-product-message"></p>
+    </div>
+</main>
+
+
+<script>
+    let token = sessionStorage.getItem('token');
+    let user = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')) : null;
+
+    if (!token || !user) {
+        alert('Bạn cần đăng nhập để sử dụng chức năng này');
+        window.location.href = '/admin/login';
+    }
+
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    };
+
+    document.getElementById("addCategoryForm").addEventListener("submit", function (event) {
+        event.preventDefault(); // Ngăn chặn reload trang
+
+        const categoryName = document.getElementById("categoryName").value.trim();
+        const categoryStatus = document.getElementById("categoryStatus").value;
+        const messageBox = document.getElementById("categoryMessage");
+
+        if (categoryName === "") {
+            messageBox.textContent = "Tên danh mục không được để trống.";
+            messageBox.style.color = "red";
+            return;
+        }
+
+        const categoryData = {
+            ten_loai: categoryName,
+            an_hien: Number(categoryStatus)
+        };
+
+        fetch("/admin/api/add-category", {
+            method: "POST",
+            headers: headers, // Sử dụng headers có Authorization
+            body: JSON.stringify(categoryData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => Promise.reject(err));
+            }
+            return response.json();
+        })
+        .then(() => {
+            messageBox.textContent = "Danh mục đã được thêm thành công!";
+            messageBox.style.color = "green";
+
+            // Xóa nội dung input sau khi thêm thành công
+            document.getElementById("categoryName").value = "";
+            document.getElementById("categoryStatus").value = "1";
+        })
+        .catch(error => {
+            console.error("Lỗi:", error);
+            messageBox.textContent = error.thong_bao || "Có lỗi xảy ra khi thêm danh mục.";
+            messageBox.style.color = "red";
+        });
+    });
+</script>

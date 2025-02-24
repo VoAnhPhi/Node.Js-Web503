@@ -1,0 +1,83 @@
+<div class="container">
+    <div class="loginModal --modalRegister">
+        <div class="close-btn">
+            <img src="img/icon/close-icon.svg" alt="">
+        </div>
+        <div class="loginModal__heading">
+            <img src="img/logo-modal.svg" alt="">
+        </div>
+        <div class="loginModal__content">
+            <div class="content">
+                <p>Đăng nhập</p>
+                <p class="description">GBOX luôn sẵn sàng với căn hộ đầy đủ tiện ích cho bạn!</p>
+            </div>
+            <form class="loginMainForm" name="frmdn">
+                <div class="phone">
+                    <label for="phone">Email*</label>
+                    <input type="email" id="phone" name="email" placeholder="VD: abc@gmail.com" required>
+                </div>
+                <div class="password">
+                    <label for="password">Nhập mật khẩu*</label>
+                    <input type="password" id="password" name="mat_khau"
+                        placeholder="Nhập mật khẩu của bạn ít nhất 6 ký tự" required>
+                </div>
+                <div class="select-privacy">
+                    <div class="hold-login">
+                        <input type="checkbox" name="remember">
+                        <label for="">Duy trì đăng nhập</label>
+                    </div>
+                    <div class="forget-password">
+                        <label for=""><a style="color: #001F3B; text-decoration: underline;" href="/quen_pass">Quên mật khẩu?</a></label>
+                    </div>
+                </div>
+                <div class="button">
+                    <button type="submit" name="btn">Đăng Nhập</button>
+                    <div class="sub-btn">
+                        <span>Bạn chưa có tài khoản</span>
+                        <a style="color: #001F3B; text-decoration: underline;"  href="/dang_ky">Đăng ký</a>
+                    </div>
+                </div>
+                <b class="m-3" id="thong_bao" style="color:red"></b>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    const frm = document.forms['frmdn'];
+    frm.btn.onclick = function () {
+        event.preventDefault();
+        const url = `http://localhost:5000/api/auth/dangnhap`;
+        const data = {
+            email: frm.email.value,
+            mat_khau: frm.mat_khau.value
+        }
+        if (data.email == "" || data.mat_khau == "") {
+            alert("Chưa nhập đủ thông tin");
+            return false;
+        }
+        const opt = {
+            method: "post",
+            body: JSON.stringify(data),
+            headers: { "Content-type": "application/json" }
+        }
+        fetch(url, opt).then(res => {
+            if (res.ok == false) throw new Error(res.statusText);
+            return res.json();
+        })
+            .then(data => {
+                console.log("data=", data);
+                if (data.thong_bao != undefined) {
+                    document.querySelector("#thong_bao").innerHTML = data.thong_bao;
+                    return;
+                }
+                let token = data.token;
+                let user = data.info;
+                sessionStorage.setItem("token", token);
+                sessionStorage.setItem("user", JSON.stringify(user));
+                document.location = "/";
+            })
+            .catch(err => {
+                console.log(`Lỗi: ` + err);
+            });
+    }
+</script>

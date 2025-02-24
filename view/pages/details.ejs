@@ -1,0 +1,136 @@
+<div class="home_page">
+    <div class="home_page-nav">
+        <div class="container">
+            <ul class="home_page-nav-list" id="menu">
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div id="menu"></div>
+<div id="kq"></div>
+
+<div id="spmoi"></div>
+<script>
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+    fetch(`http://localhost:5000/api/loai`)
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(loai_arr => {
+            const menu = document.querySelector("#menu");
+            loai_arr.forEach(loai => {
+                menu.innerHTML += `
+                <li class="nav-item">
+                    <a class="nav-link" href="loai?id=${loai.id}">${loai.ten_loai}</a>
+                </li>`;
+            });
+        })
+        .catch(err => console.error(`Lỗi: ${err}`));
+
+    //lấy chi tiết 1 sản phẩm từ api và hiện trong div kq
+    let id = getQueryParam("id")
+    let url = `http://localhost:5000/api/products/detail/${id}`;
+    fetch(url).then(res => {
+        if (res.ok == false) throw new Error(res.statusText);
+        return res.json()
+    })
+        .then(sp => {
+            // console.log("sp=", sp);
+            let str = `
+            <div id="left"><img src="${sp.hinh}" /></div>
+            <div id="right">
+                <h3>${sp.ten_sp}</h3>
+                <p>Giá gốc : <del>${sp.gia.toLocaleString('vi-VN')} VNĐ</del> </p>
+                <p>Khuyến mãi: ${sp.gia_km.toLocaleString('vi-VN')} VNĐ</p>
+                <p>Cập nhật: ${sp.ngay}</p>
+                <p>Xem: ${sp.luot_xem} lần </p>
+                <p><button class="btn btn-primary">Thêm vào giỏ</button></p>
+                <div class="attribute">
+        <table class="product-table" id="attribute_block">
+        </table>
+    </div>
+            </div>`
+            document.querySelector("#kq").innerHTML = `
+            <div class="container">
+                 <div id="spdetail">
+                    <h2>Chi tiết sản phẩm </h2>
+                    <div id="data">${str}</div>
+                </div>
+            </div>`
+            return fetch(`http://localhost:5000/api/products/similar/${sp.id_loai}/${id}`);
+        })
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(sp_arr => {
+            console.log("Sản phẩm cùng loại:", sp_arr);
+            const spmoi = document.querySelector("#spmoi");
+
+            if (sp_arr.length === 0) {
+                spmoi.innerHTML = "<p>Không có sản phẩm nào cùng loại.</p>";
+                return;
+            }
+            let str = ""; // Tạo danh sách sản phẩm cùng loại
+            sp_arr.forEach(sp => {
+                str += `
+                <div class="product-card">
+                <a href="detail?id=${sp.id}">${sp.ten_sp}</a>
+                <img src="${sp.hinh}" alt="${sp.ten_sp}" />
+                <p><del>${Number(sp.gia).toLocaleString('vi-en')} VNĐ</del></p>
+                <p class="price">${Number(sp.gia_km).toLocaleString('vi-en')} VNĐ</p>
+            </div>`;
+            });
+
+            // Hiển thị sản phẩm cùng loại
+            spmoi.innerHTML = `
+            <div class="container">
+                <h2>Sản phẩm cùng loại</h2>
+                <div id="product-grid">${str}</div>
+            </div>`;
+        })
+        .catch(err => { console.log(`Lỗi: ` + err) })
+
+    console.log(id)
+    fetch(`http://localhost:5000/api/products/thuoc_tinh/type/${id}`)
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(attribute => {
+            console.log(attribute)
+            const attributeBlock = document.querySelector('#attribute_block');
+            attributeBlock.innerHTML += `
+                    <tr>
+                        <th>Thuộc tính</th>
+                        <th>Giá trị</th>
+                    </tr>
+                    <tr>
+                        <td>RAM</td>
+                        <td>${attribute.ram}</td>
+                    </tr>
+                    <tr>
+                        <td>CPU</td>
+                        <td>${attribute.cpu}</td>
+                    </tr>
+                    <tr>
+                        <td>Ổ đĩa cứng</td>
+                        <td>${attribute.dia_cung}</td>
+                    </tr>
+                    <tr>
+                        <td>Màu sắc</td>
+                        <td>${attribute.mau_sac}</td>
+                    </tr>
+                    <tr>
+                        <td>Cân nặng</td>
+                        <td>${attribute.can_nang}</td>
+                    </tr>
+                `
+        })
+        .catch(err => console.error('Lỗi khi fetch danh mục:', err));
+</script>

@@ -1,0 +1,59 @@
+<header class="heading">
+    <div class="container">
+        <div class="heading__logo">
+            <a href="/"><img src="img/logo.svg" alt="main_logo"></a>
+        </div>
+        <div class="heading__nav">
+            <ul class="heading__nav-menu">
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="#">Sản phẩm</a></li>
+                <li><a href="/tintuc">Tin Tức</a></li>
+                <li><a href="#">Liên hệ</a></li>
+                <li><a href="">Về chúng tôi</a></li>
+            </ul>
+        </div>
+        <div class="heading__cta">
+            <div class="heading__cta-search">
+                <img src="img/icon/magnifier.svg" alt="">
+                <input type="text" placeholder="Tìm kiếm...">
+            </div>
+            <div class="heading__cta-notice">
+                <img src="img/icon/notice.svg" alt="">
+            </div>
+            <div class="heading__cta-user">
+                <a href="/info">
+                    <img src="img/icon/user.svg" alt="">
+                </a>
+                <div class="heading__cta-user-dropdown">
+                    <ul class="heading__cta-user-dropdown-menu">
+                        <li class="heading__cta-user-dropdown-item"><a href="/info">Thông tin</a></li>
+                        <li class="heading__cta-user-dropdown-item"><a href="/gio_hang">Giỏ hàng</a></li>
+                        <li class="heading__cta-user-dropdown-item"><a href="#">Đơn hàng</a></li>
+                        <li class="heading__cta-user-dropdown-item" id="user_info"></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="heading__cta-cart">
+                <img src="img/icon/cart-icon.svg" alt="">
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            let user = JSON.parse(sessionStorage.getItem("user"))
+            let obj = document.querySelector('#user_info')
+            if (user == null) {
+                obj.innerHTML = `<a href="/dang_nhap">Đăng Nhập</a>`
+            } else {
+                obj.innerHTML = `<a href="#" class="logout"> Đăng Xuất</a>`
+            }
+
+            $(document).on("click",".logout",function () {
+                sessionStorage.removeItem("token");
+                sessionStorage.removeItem("user");
+                document.location = "/";
+            });
+
+        })
+    </script>
+</header>

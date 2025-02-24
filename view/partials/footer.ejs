@@ -1,0 +1,79 @@
+<footer class="footer">
+    <div class="container">
+        <div class="footer__section">
+            <h3>Về Chúng Tôi</h3>
+            <p>
+                GBOX cung cấp dịch vụ thuê nơi chụp với không gian căn hộ sang trọng và view đẹp.
+                Chúng tôi cam kết mang đến cho bạn không gian hoàn hảo để tạo nên những bức ảnh ấn tượng với mức giá
+                hợp lý.
+            </p>
+            <div class="footer__certificates">
+                <img src="/img/icon/logo_gov-1.svg" alt="Đã đăng ký">
+                <img src="/img/icon/logo_gov-2.svg" alt="Đã thông báo">
+            </div>
+        </div>
+
+        <div class="footer__section">
+            <h3>Chính sách & Quy định</h3>
+            <ul>
+                <li><a href="#">Điều khoản và điều kiện</a></li>
+                <li><a href="#">Quy định về thanh toán</a></li>
+                <li><a href="#">Quy định về xác nhận thông tin</a></li>
+                <li><a href="#">Chính sách về hủy & hoàn trả tiền</a></li>
+                <li><a href="#">Các câu hỏi thường gặp</a></li>
+            </ul>
+        </div>
+
+        <div class="footer__section">
+            <h3>Liên hệ với chúng tôi</h3>
+            <p class="footer__section--nowrap">
+                <img src="/img/icon/map-pin.svg" alt="Địa chỉ">
+                Đ. Tân Hưng Thuận, Quận 12, Hồ Chí Minh
+            </p>
+            <p>
+                <img src="/img/icon/email-icon.svg" alt="Email">
+                Email: <a href="mailto:dsun.agency@gmail.com">dsun.agency@gmail.com</a>
+            </p>
+            <p>
+                <img src="/img/icon/phone-icon.svg" alt="Hotline">
+                Hotline: <a href="tel:1800101121">1800 10 11 21</a>
+            </p>
+            <form id="subscribe-form">
+                <input type="email" id="subscribe-email" placeholder="Nhập email của bạn..." required>
+                <button type="submit">Xác nhận</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="footer__bottom">
+        <div class="container">
+            <p>Copyright © 2024 Have A Trip. All Rights Reserved.</p>
+            <div class="footer__bottom-payments">
+                <a href="#"><img src="/img/icon/visa.svg" alt="Visa"></a>
+                <a href="#"><img src="/img/icon/paypal.svg" alt="PayPal"></a>
+                <a href="#"><img src="/img/icon/mastercard.svg" alt="MasterCard"></a>
+                <a href="#"><img src="/img/icon/gpay.svg" alt="Google Pay"></a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    document.getElementById("subscribe-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+        const email = document.getElementById("subscribe-email").value;
+
+        // Kiểm tra định dạng email
+        if (!validateEmail(email)) {
+            alert("Vui lòng nhập địa chỉ email hợp lệ!");
+            return;
+        }
+
+        alert("Cảm ơn bạn đã đăng ký nhận tin!");
+        document.getElementById("subscribe-email").value = "";
+    });
+
+    function validateEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+</script>

@@ -1,0 +1,107 @@
+<div class="container">
+    <div class="loginModal --modalRegister">
+        <div class="close-btn">
+            <img src="img/icon/close-icon.svg" alt="">
+        </div>
+        <div class="loginModal__heading">
+            <img src="img/logo-modal.svg" alt="">
+        </div>
+        <div class="loginModal__content">
+            <div class="content">
+                <p>Đổi Mật Khẩu</p>
+            </div>
+            <form class="loginMainForm" name="frmDoi">
+                <div class="phone">
+                    <label for="phone">Email*</label>
+                    <input type="email" id="phone" name="email" placeholder="Nhập Email của bạn" required>
+                </div>
+                <div class="password">
+                    <label for="password">Nhập mật khẩu cũ của bạn*</label>
+                    <input type="password" id="password" name="mat_khau_cu" placeholder="Nhập mật khẩu cũ của bạn"
+                        required>
+                </div>
+                <div class="password">
+                    <label for="password">Nhập mật khẩu mới*</label>
+                    <input type="password" id="password" name="mat_khau_moi"
+                        placeholder="Nhập mật khẩu của bạn ít nhất 6 ký tự" required>
+                </div>
+                <div class="password">
+                    <label for="password">Nhập lại mật khẩu mới*</label>
+                    <input type="password" id="password" name="go_lai_mat_khau"
+                        placeholder="Nhập lại mật khẩu mới để xác nhận" required>
+                </div>
+                <div class="select-privacy">
+                    <div class="hold-login">
+                        <input type="checkbox" name="remember">
+                        <label for="">Duy trì đăng nhập</label>
+                    </div>
+                    <div class="forget-password">
+                        <label for=""><a href="/quen_pass">Quên mật khẩu?</a></label>
+                    </div>
+                </div>
+                <div class="button">
+                    <button type="submit" name="btn">Đổi mật khẩu</button>
+                    <div class="sub-btn">
+                        <span>Bạn chưa có tài khoản</span>
+                        <a href="/dang_ky">Đăng ký</a>
+                    </div>
+                </div>
+                <b class="m-3" id="thong_bao" style="color:red"></b>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    // cập nhật mật khẩu mới
+    const frm = document.forms['frmDoi'];
+    let token = sessionStorage.getItem("token");
+    let userInfo = sessionStorage.getItem("user");
+    if (token == null || userInfo == null) {
+        alert("Bạn chưa đăng nhập");
+        document.location = "dangnhap.html";
+    }
+
+    userInfo = JSON.parse(userInfo);
+    frm.email.value = userInfo.email;
+    frm.mat_khau_cu.focus();
+    frm.btn.onclick = function () {
+        event.preventDefault();
+        const url = 'http://localhost:5000/api/auth/doipass';
+        const data = {
+            mat_khau_cu: frm.mat_khau_cu.value,
+            mat_khau_moi: frm.mat_khau_moi.value,
+            go_lai_mat_khau: frm.go_lai_mat_khau.value
+        };
+        if (data.mat_khau_cu == "" || data.mat_khau_moi == "" || data.go_lai_mat_khau == "") {
+            alert("Chưa nhập đủ thông tin");
+            return false;
+        }
+
+        const opt = {
+            method: "post",
+            body: JSON.stringify(data),
+            headers: {
+                "Content-type": "application/json",
+                "authorization": "Bearer " + token
+            }
+        };
+
+        fetch(url, opt)
+            .then(res => {
+                return res.json();
+            })
+            .then(data => {
+                console.log("data:", data);
+                document.querySelector("#thong_bao").innerText = data.thong_bao;
+                if (data.sqlMessage != undefined)
+                    document.querySelector("#thong_bao").innerText += ": " + data.sqlMessage;
+                setTimeout(() => {
+                    window.location.href = "/info";
+                }, 3000);
+            })
+            .catch(err => { 
+                console.log("Lỗi: " + err) 
+            });
+    };
+
+</script>
