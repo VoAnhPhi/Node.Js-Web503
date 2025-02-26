@@ -22,6 +22,21 @@
             </div>
 
             <div class="add-product-input-wrapper">
+                <label for="productPrice" class="add-product-input-label">Mô tả</label>
+                <div class="add-product-select-wrapper">
+                    <textarea name="" id="description" placeholder="Nhập mô tả đơn giản cho sản phẩm"></textarea>
+                </div>
+            </div>
+            <div class="add-product-input-wrapper">
+                <label for="statusHot" class="add-product-input-label">Hot</label>
+                <div class="add-product-select-wrapper">
+                    <select id="statusHot" class="add-product-select-hot" required>
+                        <option value="1">Hot</option>
+                        <option value="0">Không</option>
+                    </select>
+                </div>
+            </div>
+            <div class="add-product-input-wrapper">
                 <label for="productName" class="add-product-input-label">Product Name</label>
                 <input type="text" id="productName" class="add-product-input" required />
             </div>
@@ -62,6 +77,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         let token = sessionStorage.getItem('token');
         let user = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')) : null;
+        const API_BASE_URL = "http://localhost:5000/admin/api";
 
         if (!token || !user) {
             alert('Bạn cần đăng nhập để sử dụng chức năng này');
@@ -84,8 +100,8 @@
 
         // Lấy danh mục từ API
         function fetchCategories(selectedCategory) {
-            fetch("/admin/api/get-all-category", { method: "GET", headers })
-                .then(response => response.json().then(data => response.ok ? data : Promise.reject(data)))
+            fetch(`${API_BASE_URL}/get-all-category`, { method: "GET", headers })
+                .then(response => response.json())
                 .then(categories => {
                     categorySelect.innerHTML = "";
                     categories.forEach(category => {
@@ -103,27 +119,29 @@
                 });
         }
 
-        // Lấy thông tin sản phẩm từ API bằng ID
+        // Lấy thông tin sản phẩm
         function fetchProductData() {
-            fetch(`/admin/api/get-all-products-by/${productId}`, { method: "GET", headers })
-                .then(response => response.json().then(data => response.ok ? data : Promise.reject(data)))
+            fetch(`${API_BASE_URL}/get-all-products-by/${productId}`, { method: "GET", headers })
+                .then(response => response.json())
                 .then(product => {
                     document.getElementById("productName").value = product.ten_sp;
                     document.getElementById("productPrice").value = product.gia;
                     document.getElementById("productDiscountPrice").value = product.gia_km || "";
                     document.getElementById("productStatus").value = product.an_hien;
+                    document.getElementById("description").value = product.mo_ta || "";
+                    document.getElementById("statusHot").value = product.hot;
                     previewMainImage.src = product.hinh;
                     previewMainImage.style.display = "block";
 
                     fetchCategories(product.id_loai);
                 })
                 .catch(error => {
-                    messageBox.textContent = error.message || "Lỗi khi tải sản phẩm.";
+                    messageBox.textContent = "Lỗi khi tải sản phẩm.";
                     messageBox.style.color = "red";
                 });
         }
 
-        // Khi chọn ảnh, chỉ lưu file, không upload ngay
+        // Khi chọn ảnh
         uploadMainImageBtn.addEventListener("click", function () {
             mainImageInput.click();
         });
@@ -151,12 +169,12 @@
             const formData = new FormData();
             formData.append("image", uploadedImageFile);
 
-            fetch("/admin/upload-image", {
+            fetch(`${API_BASE_URL}/upload-image`, {
                 method: "POST",
                 body: formData,
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-                .then(response => response.json().then(data => response.ok ? data : Promise.reject(data)))
+                .then(response => response.json())
                 .then(data => callback(data.imageUrl))
                 .catch(error => {
                     console.error("Lỗi khi upload ảnh:", error);
@@ -173,6 +191,8 @@
             const productDiscountPrice = document.getElementById("productDiscountPrice").value;
             const productCategory = categorySelect.value;
             const productStatus = document.getElementById("productStatus").value;
+            const productDescription = document.getElementById("description").value.trim();
+            const productHot = document.getElementById("statusHot").value === "1" ? 1 : 0;
 
             if (!productName || !productPrice || !productCategory) {
                 messageBox.textContent = "Vui lòng nhập đầy đủ thông tin.";
@@ -180,7 +200,6 @@
                 return;
             }
 
-            // Upload ảnh trước khi gửi sản phẩm
             uploadImage(function (imageUrl) {
                 const productData = {
                     ten_sp: productName,
@@ -188,27 +207,29 @@
                     gia_km: productDiscountPrice || null,
                     id_loai: productCategory,
                     an_hien: Number(productStatus),
+                    mo_ta: productDescription,
+                    hot: productHot,
                     hinh: imageUrl
                 };
 
-                fetch(`/admin/api/update-product/${productId}`, {
+                fetch(`${API_BASE_URL}/update-product/${productId}`, {
                     method: "PUT",
                     headers: headers,
                     body: JSON.stringify(productData)
                 })
-                    .then(response => response.json().then(data => response.ok ? data : Promise.reject(data)))
+                    .then(response => response.json())
                     .then(() => {
                         messageBox.textContent = "Sản phẩm đã được cập nhật!";
                         messageBox.style.color = "green";
                     })
                     .catch(error => {
                         console.error(error);
-                        messageBox.textContent = error.thong_bao || "Lỗi khi cập nhật sản phẩm.";
+                        messageBox.textContent = "Lỗi khi cập nhật sản phẩm.";
                         messageBox.style.color = "red";
                     });
             });
         });
-
         fetchProductData();
     });
+
 </script>
