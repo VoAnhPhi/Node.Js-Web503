@@ -172,13 +172,23 @@ exports.getAllCategories = (req, res) => {
 };
 
 exports.addCategory = (req, res) => {
-    const { ten_loai } = req.body;
-    let sql = `INSERT INTO loai (ten_loai, an_hien) VALUES (?, 1)`;
-    db.query(sql, [ten_loai], (err, data) => {
-        if (err) return res.status(500).json({ error: "Lỗi thêm danh mục" });
+    const { ten_loai, an_hien } = req.body;
+
+    const status = an_hien === 0 ? 0 : 1;
+
+    let sql = `INSERT INTO loai (ten_loai, an_hien) VALUES (?, ?)`;
+    db.query(sql, [ten_loai, status], (err, data) => {
+        if (err) {
+            console.error("Lỗi khi thêm danh mục:", err);
+            return res.status(500).json({ 
+                error: "Lỗi thêm danh mục", 
+                details: err.sqlMessage || err.message 
+            });
+        }
         res.json({ message: "Đã thêm danh mục", id: data.insertId });
     });
 };
+
 
 exports.deleteCategory = (req, res) => {
     const id = req.params.id;

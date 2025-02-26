@@ -22,7 +22,7 @@
         let token = localStorage.getItem('token');
         let user = JSON.parse(sessionStorage.getItem('user'));
         if (user === null) {
-            alert('Có lỗi khi đăng nhập bạn đăng nhập lại nhé !');
+            alert('Có lỗi khi đăng nhập admin !');
             window.location.href = '/admin/login';
         } else {
             document.querySelector('.profile-name').innerHTML = user.ho_ten;

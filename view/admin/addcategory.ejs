@@ -54,7 +54,7 @@
         event.preventDefault(); // Ngăn chặn reload trang
 
         const categoryName = document.getElementById("categoryName").value.trim();
-        const categoryStatus = document.getElementById("categoryStatus").value;
+        const categoryStatus = Number(document.getElementById("categoryStatus").value);
         const messageBox = document.getElementById("categoryMessage");
 
         if (categoryName === "") {
