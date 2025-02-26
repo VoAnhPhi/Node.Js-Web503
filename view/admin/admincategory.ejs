@@ -1,18 +1,18 @@
 <main class="main-content">
     <header class="header-section">
         <div>
-            <h1 class="page-title">Services</h1>
-            <p class="page-subtitle">Service</p>
+            <h1 class="page-title">Danhh mục</h1>
+            <p class="page-subtitle">Trang quản trị danh mục</p>
         </div>
 
         <div class="user-profile">
             <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/8bb0745711ce6133076d46e9679fb39046eda8008659709e00d84e588f01f7b1?placeholderIfAbsent=true&apiKey=c01b0b1f77f44db1a01eba6bb534c16f"
                 alt="User Profile" class="profile-image">
             <div class="profile-info">
-                <span class="profile-name">Nguyen Phuong</span>
-                <span class="profile-email">dsun.agency@gmail.com</span>
+                <span class="profile-name"></span>
+                <span class="profile-email"></span>
             </div>
-            <button aria-label="User menu" class="profile-menu">
+            <button aria-label="User menu" class="profile-menu" id="logout">
                 <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/d06db6e006919a5ea636ac00218298dc8ea375846d2fc7f39ffddf2b532ee929?placeholderIfAbsent=true&apiKey=c01b0b1f77f44db1a01eba6bb534c16f"
                     alt="">
             </button>
@@ -23,13 +23,13 @@
             <div class="tab-group-product">
                 <a href="#booking-list" class="tab-link tab-link-black active" aria-current="page">
                     <div class="active-indicator" aria-hidden="true"></div>
-                    <span class="tab-text">List services</span>
+                    <span class="tab-text">Danh mục</span>
                 </a>
                 <button class="add-product-btn" tabindex="0">
                     <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/b633fdb76f5b691270eead81d21f22c6900577decef1c1f6a355bcc914dbc0e0?placeholderIfAbsent=true&apiKey=c01b0b1f77f44db1a01eba6bb534c16f"
                         alt="" class="add-icon" />
-                    <span><a class="add-product-btn--link" href="/admin/admincategory/addcategory">Add New
-                            Service</a></span>
+                    <span><a class="add-product-btn--link" href="/admin/admincategory/addcategory">Thêm danh
+                            mục</a></span>
                 </button>
 
             </div>
@@ -74,18 +74,27 @@
 <script>
     let token = sessionStorage.getItem("token");
     let user = sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")) : null;
-
-    if (!token || !user) {
-        alert('Bạn cần đăng nhập để sử dụng chức năng này');
-        window.location.href = '/admin/login';
-    }
-
     const API_BASE_URL = "http://localhost:5000/admin/api";
-
     const headers = {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
     };
+
+    if (token == null, user == null) {
+        alert('Bạn cần đăng nhập để sử dụng chức năng này')
+        window.location.href = '/admin/login'
+    } else {
+        document.querySelector('.profile-name').innerHTML = user.ho_ten;
+        document.querySelector('.profile-email').innerHTML = user.email;
+    }
+    document.getElementById('logout').addEventListener('click', function (e) {
+        // bạn có muốn đăng xuất không 
+        if (confirm('Bạn có muốn đăng xuất không ?') === true) {
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+            window.location.href = '/admin/login';
+        }
+    });
 
     document.addEventListener("DOMContentLoaded", function () {
         const tableBody = document.querySelector(".booking-table tbody");

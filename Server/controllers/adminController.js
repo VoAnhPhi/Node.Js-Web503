@@ -94,32 +94,34 @@ exports.uploadImage = (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
     }
-    const imageUrl = `/uploads/${req.file.filename}`;
+    const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
     res.json({ imageUrl });
 };
 
 exports.postProduct = (req, res) => {
-    let { ten_sp, gia, gia_km, id_loai, an_hien, hinh } = req.body;
+    let { ten_sp, gia, gia_km, id_loai, an_hien, mo_ta, hot, hinh } = req.body;
 
-    let sql = `INSERT INTO san_pham (ten_sp, gia, gia_km, id_loai, an_hien, hinh) VALUES (?, ?, ?, ?, ?, ?)`;
+    let sql = `INSERT INTO san_pham (ten_sp, gia, gia_km, id_loai, an_hien, mo_ta, hot, hinh) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
-    db.query(sql, [ten_sp, gia, gia_km, id_loai, an_hien, hinh], (err, data) => {
+    db.query(sql, [ten_sp, gia, gia_km, id_loai, an_hien, mo_ta, hot, hinh], (err, data) => {
         if (err) return res.status(500).json({ error: "Lỗi thêm sản phẩm" });
         res.json({ message: "Sản phẩm đã được thêm", id: data.insertId });
     });
 };
 
+
 exports.updateProduct = (req, res) => {
     let id = req.params.id;
-    let { ten_sp, gia, gia_km, ngay, id_loai, luot_xem, an_hien, hot, hinh } = req.body;
+    let { ten_sp, gia, gia_km, id_loai, an_hien, mo_ta, hot, hinh } = req.body;
 
-    let sql = `UPDATE san_pham SET ten_sp=?, gia=?, gia_km=?, ngay=?, id_loai=?, luot_xem=?, an_hien=?, hot=?, hinh=? WHERE id=?`;
+    let sql = `UPDATE san_pham SET ten_sp=?, gia=?, gia_km=?, id_loai=?, an_hien=?, mo_ta=?, hot=?, hinh=? WHERE id=?`;
 
-    db.query(sql, [ten_sp, gia, gia_km, ngay, id_loai, luot_xem, an_hien, hot, hinh, id], (err, data) => {
-        if (err) return res.json(err);
-        return res.json({ "thong_bao": "Đã cập nhật sản phẩm", "id": id });
+    db.query(sql, [ten_sp, gia, gia_km, id_loai, an_hien, mo_ta, hot, hinh, id], (err, data) => {
+        if (err) return res.status(500).json({ error: "Lỗi cập nhật sản phẩm" });
+        return res.json({ message: "Đã cập nhật sản phẩm", id: id });
     });
 };
+
 
 exports.deleteProduct = (req, res) => {
     let id = req.params.id;
@@ -207,3 +209,17 @@ exports.updateCategory = (req, res) => {
         res.json({ message: "Đã cập nhật danh mục" });
     });
 };
+
+exports.searchProducts = (req, res) => {
+    const searchQuery = req.query.q;
+    if (!searchQuery) {
+        return res.json({ message: "Vui lòng nhập từ khóa tìm kiếm" });
+    }
+    const sql = `SELECT * FROM san_pham WHERE ten_sp LIKE ?`;
+    db.query(sql, [`%${searchQuery}%`], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(results);
+    });
+}

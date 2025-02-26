@@ -38,6 +38,7 @@
 <script>
     let token = sessionStorage.getItem('token');
     let user = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')) : null;
+    const API_BASE_URL = "http://localhost:5000/admin/api";
 
     if (!token || !user) {
         alert('Bạn cần đăng nhập để sử dụng chức năng này');
@@ -67,7 +68,7 @@
             an_hien: Number(categoryStatus)
         };
 
-        fetch("/admin/api/add-category", {
+        fetch(`${API_BASE_URL}/add-category`, {
             method: "POST",
             headers: headers, // Sử dụng headers có Authorization
             body: JSON.stringify(categoryData)

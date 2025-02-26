@@ -38,6 +38,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         const urlParams = new URLSearchParams(window.location.search);
         const categoryId = urlParams.get("id"); // Lấy ID danh mục từ URL
+        const API_BASE_URL = "http://localhost:5000/admin/api";
 
         if (!categoryId) {
             const messageBox = document.getElementById("editCategoryMessage");
@@ -66,7 +67,7 @@
 
         // Hàm fetch dữ liệu danh mục
         function fetchCategoryData() {
-            fetch(`/admin/api/get-all-category`, { method: "GET", headers })
+            fetch(`${API_BASE_URL}/get-all-category`, { method: "GET", headers })
                 .then(response => {
                     if (!response.ok) return response.json().then(err => Promise.reject(err));
                     return response.json();
@@ -101,7 +102,7 @@
                 an_hien: Number(updatedStatus)
             };
 
-            fetch(`/admin/api/update-category/${categoryId}`, {
+            fetch(`${API_BASE_URL}/update-category/${categoryId}`, {
                 method: "PUT",
                 headers: headers,
                 body: JSON.stringify(updatedData)

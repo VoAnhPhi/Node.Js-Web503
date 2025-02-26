@@ -27,13 +27,20 @@
             </div>
 
             <div class="add-product-input-wrapper">
-                <label for="productPrice" class="add-product-input-label">Price</label>
-                <input type="number" id="productPrice" class="add-product-input" placeholder="Price" required />
+                <label for="productPrice" class="add-product-input-label">Mô tả</label>
+                <div class="add-product-select-wrapper">
+                    <textarea name="" id="description" placeholder="Nhập mô tả đơn giản cho sản phẩm"></textarea>
+                </div>
             </div>
 
             <div class="add-product-input-wrapper">
-                <label for="productDiscountPrice" class="add-product-input-label">Discount Price</label>
-                <input type="number" id="productDiscountPrice" class="add-product-input" placeholder="Discount Price" />
+                <label for="statusHot" class="add-product-input-label">Hot</label>
+                <div class="add-product-select-wrapper">
+                    <select id="statusHot" class="add-product-select-hot" required>
+                        <option value="">Hot</option>
+                        <option value="">Không</option>
+                    </select>
+                </div>
             </div>
 
             <div class="add-product-input-wrapper">
@@ -46,6 +53,11 @@
             </div>
 
             <div class="add-product-input-wrapper">
+                <label for="productPrice" class="add-product-input-label">Price</label>
+                <input type="number" id="productPrice" class="add-product-input" placeholder="Price" required />
+            </div>
+
+            <div class="add-product-input-wrapper">
                 <label for="productStatus" class="add-product-input-label">Status</label>
                 <div class="add-product-select-wrapper">
                     <select id="productStatus" class="add-product-select">
@@ -53,7 +65,11 @@
                         <option value="0">Hidden</option>
                     </select>
                 </div>
+            </div>
 
+            <div class="add-product-input-wrapper">
+                <label for="productDiscountPrice" class="add-product-input-label">Discount Price</label>
+                <input type="number" id="productDiscountPrice" class="add-product-input" placeholder="Discount Price" />
             </div>
 
             <button type="submit" class="add-product-submit-btn">Add Product</button>
@@ -67,6 +83,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         let token = sessionStorage.getItem('token');
         let user = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')) : null;
+        const API_BASE_URL = "http://localhost:5000/admin/api";
 
         if (!token || !user) {
             alert('Bạn cần đăng nhập để sử dụng chức năng này');
@@ -88,7 +105,7 @@
 
         // Lấy danh mục từ API
         function fetchCategories() {
-            fetch("/admin/api/get-all-category", { method: "GET", headers })
+            fetch(`${API_BASE_URL}/get-all-category`, { method: "GET", headers })
                 .then(response => response.json().then(data => response.ok ? data : Promise.reject(data)))
                 .then(categories => {
                     categories.forEach(category => {
@@ -133,19 +150,21 @@
             const formData = new FormData();
             formData.append("image", uploadedImageFile);
 
-            fetch("/admin/upload-image", {
+            fetch("http://localhost:5000/admin/upload-image", {
                 method: "POST",
                 body: formData,
                 headers: { 'Authorization': `Bearer ${token}` }
             })
                 .then(response => response.json().then(data => response.ok ? data : Promise.reject(data)))
                 .then(data => callback(data.imageUrl))
+            console.log(data.imageUrl)
                 .catch(error => {
                     console.error("Lỗi khi upload ảnh:", error);
                     callback(null);
                 });
         }
 
+        // Gửi dữ liệu sản phẩm
         // Gửi dữ liệu sản phẩm
         productForm.addEventListener("submit", function (event) {
             event.preventDefault();
@@ -155,6 +174,8 @@
             const productDiscountPrice = document.getElementById("productDiscountPrice").value;
             const productCategory = categorySelect.value;
             const productStatus = document.getElementById("productStatus").value;
+            const productDescription = document.getElementById("description").value.trim();
+            const productHot = document.getElementById("statusHot").value === "1" ? 1 : 0;
 
             if (!productName || !productPrice || !productCategory) {
                 messageBox.textContent = "Vui lòng nhập đầy đủ thông tin.";
@@ -170,10 +191,12 @@
                     gia_km: productDiscountPrice || null,
                     id_loai: productCategory,
                     an_hien: Number(productStatus),
+                    mo_ta: productDescription, // Thêm mô tả sản phẩm
+                    hot: productHot, // Thêm key hot
                     hinh: imageUrl || "" // Lưu link ảnh hoặc rỗng nếu không có
                 };
 
-                fetch("/admin/api/create-product", {
+                fetch(`${API_BASE_URL}/create-product`, {
                     method: "POST",
                     headers: headers,
                     body: JSON.stringify(productData)
@@ -196,6 +219,7 @@
                     });
             });
         });
+
 
         fetchCategories();
     });

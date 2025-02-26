@@ -1,19 +1,19 @@
 <main class="main-content">
     <header class="header-section">
         <div>
-            <h1 class="page-title">Products</h1>
-            <p class="page-subtitle">View all status from the dashboard.</p>
+            <h1 class="page-title">Sản phẩm</h1>
+            <p class="page-subtitle">Trang quản trị sản phẩm</p>
         </div>
 
         <div class="user-profile">
-            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/8bb0745711ce6133076d46e9679fb39046eda8008659709e00d84e588f01f7b1"
+            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/8bb0745711ce6133076d46e9679fb39046eda8008659709e00d84e588f01f7b1?placeholderIfAbsent=true&apiKey=c01b0b1f77f44db1a01eba6bb534c16f"
                 alt="User Profile" class="profile-image">
             <div class="profile-info">
-                <span class="profile-name">Nguyen Phuong</span>
-                <span class="profile-email">dsun.agency@gmail.com</span>
+                <span class="profile-name"></span>
+                <span class="profile-email"></span>
             </div>
-            <button aria-label="User menu" class="profile-menu">
-                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/d06db6e006919a5ea636ac00218298dc8ea375846d2fc7f39ffddf2b532ee929"
+            <button aria-label="User menu" class="profile-menu" id="logout">
+                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/d06db6e006919a5ea636ac00218298dc8ea375846d2fc7f39ffddf2b532ee929?placeholderIfAbsent=true&apiKey=c01b0b1f77f44db1a01eba6bb534c16f"
                     alt="">
             </button>
         </div>
@@ -24,13 +24,64 @@
             <div class="tab-group-product">
                 <a href="#booking-list" class="tab-link tab-link-black active" aria-current="page">
                     <div class="active-indicator" aria-hidden="true"></div>
-                    <span class="tab-text">Product List</span>
+                    <span class="tab-text">Danh sách sản phẩm</span>
                 </a>
-                <a href="/admin/adminproduct/addproduct">`
+                <div class="search">
+                    <input id="searchInput" placeholder="Tìm kiếm..." type="text">
+                    <button id="searchButton" type="submit">Tìm</button>
+                    <div id="results"></div>
+                </div>
+                <script>
+                    document.getElementById("searchButton").addEventListener("click", function () {
+                        const searchValue = document.getElementById("searchInput").value.trim();
+                        function formatCurrency(value) {
+                            return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
+                        }
+                        function formatDate(dateString) {
+                            const date = new Date(dateString);
+                            return date.toLocaleDateString("vi-VN") + " lúc " + date.toLocaleTimeString("vi-VN");
+                        }
+
+                        if (!searchValue) {
+                            fetchProducts(currentPage);
+                            return;
+                        } else {
+                            // Fetch search results if search input is not empty
+                            fetch(`http://localhost:5000/admin/api/q/search?q=${searchValue}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    const tableBody = document.getElementById("productTableBody");
+                                    tableBody.innerHTML = "";
+                                    if (data.length === 0) {
+                                        resultHTML = "<tr><td colspan='10'>Không tìm thấy sản phẩm nào.</td></tr>";
+                                    } else {
+                                        data.forEach(sp => {
+                                            let row = document.createElement("tr");
+                                            const truncatedName = sp.ten_sp.length > 20 ? sp.ten_sp.substring(0, 20) + '...' : sp.ten_sp;
+                                            row.innerHTML += `
+                                                <td><img class="list-product-img" src="${sp.hinh || '../lib/img/img_product.png'}" alt=""></td>
+                                                <td>${formatCurrency(sp.gia)}</td>
+                                                <td>${sp.gia_km ? formatCurrency(sp.gia_km) : '-'}</td>
+                                                <td>${sp.ten_sp}</td>
+                                                <td>${sp.id_loai || '-'}</td>
+                                                <td>${sp.an_hien === 1 ? '<span class="status-completed">Available</span>' : '<span class="status-pending">Hidden</span>'}</td>
+                                                <td>${formatDate(sp.ngay)}</td>
+                                                <td><a href="/admin/adminproduct/editproduct?id=${sp.id}"><button class="view-btn">Edit</button></a></td>
+                                                <td><button class="delete-btn view-btn" onclick="deleteProduct(${sp.id})">Delete</button></td>
+                                            `;
+                                            tableBody.appendChild(row);
+                                        });
+                                    }
+                                })
+                                .catch(error => console.error("Lỗi:", error));
+                        }
+                    });
+                </script>
+                <a href="/admin/adminproduct/addproduct">
                     <button class="add-product-btn" tabindex="0">
                         <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/b633fdb76f5b691270eead81d21f22c6900577decef1c1f6a355bcc914dbc0e0"
                             alt="" class="add-icon" />
-                        <span>Add New Product</span>
+                        <span>Thêm sản phẩm</span>
                     </button>
                 </a>
             </div>
@@ -92,7 +143,18 @@
         if (!token || !user) {
             alert('Bạn cần đăng nhập để sử dụng chức năng này');
             window.location.href = '/admin/login';
+        } else {
+            document.querySelector('.profile-name').innerHTML = user.ho_ten;
+            document.querySelector('.profile-email').innerHTML = user.email;
         }
+        document.getElementById('logout').addEventListener('click', function (e) {
+            // bạn có muốn đăng xuất không 
+            if (confirm('Bạn có muốn đăng xuất không ?') === true) {
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('user');
+                window.location.href = '/admin/login';
+            }
+        });
 
         const headers = {
             'Authorization': `Bearer ${token}`,
@@ -103,9 +165,10 @@
         const productsPerPage = 20;
         let totalProducts = 0;
         let totalPages = 0;
+        const API_BASE_URL = "http://localhost:5000/admin/api";
 
         function fetchProducts(page = 1) {
-            fetch(`/admin/api/get-all-products?page=${page}&limit=${productsPerPage}`, { method: "GET", headers })
+            fetch(`${API_BASE_URL}/get-all-products?page=${page}&limit=${productsPerPage}`, { method: "GET", headers })
                 .then(response => response.json().then(data => response.ok ? data : Promise.reject(data)))
                 .then(({ products, total }) => {
                     totalProducts = total;
@@ -165,7 +228,7 @@
         function deleteProduct(id) {
             if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
 
-            fetch(`/admin/api/delete-product/${id}`, {
+            fetch(`${API_BASE_URL}/delete-product/${id}`, {
                 method: "DELETE",
                 headers: headers
             })

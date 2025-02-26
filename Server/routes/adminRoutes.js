@@ -9,7 +9,8 @@ const {
     deleteCategory,
     updateCategory,
     getAllCategories,
-    getProductsById
+    getProductsById,
+    searchProducts
 } = require("../controllers/adminController");
 const { adminAuth } = require("../middlewares/authMiddleware");
 const express = require("express");
@@ -78,6 +79,8 @@ router.post("/api/create-product", adminAuth, postProduct);
 router.put("/api/update-product/:id", adminAuth, updateProduct);
 
 router.delete("/api/delete-product/:id", adminAuth, deleteProduct);
+
+router.get("/api/q/search", searchProducts);
 
 router.post("/upload-image", adminAuth, upload.single("image"), uploadImage);
 

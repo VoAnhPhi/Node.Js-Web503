@@ -9,20 +9,34 @@
             <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/8bb0745711ce6133076d46e9679fb39046eda8008659709e00d84e588f01f7b1?placeholderIfAbsent=true&apiKey=c01b0b1f77f44db1a01eba6bb534c16f"
                 alt="User Profile" class="profile-image">
             <div class="profile-info">
-                <span class="profile-name">Nguyen Phuong</span>
-                <span class="profile-email">dsun.agency@gmail.com</span>
+                <span class="profile-name"></span>
+                <span class="profile-email"></span>
             </div>
-            <button aria-label="User menu" class="profile-menu">
+            <button aria-label="User menu" class="profile-menu" id="logout">
                 <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/d06db6e006919a5ea636ac00218298dc8ea375846d2fc7f39ffddf2b532ee929?placeholderIfAbsent=true&apiKey=c01b0b1f77f44db1a01eba6bb534c16f"
                     alt="">
             </button>
         </div>
     </header>
     <script>
-        
         let token = localStorage.getItem('token');
         let user = JSON.parse(sessionStorage.getItem('user'));
-        if(token == null, user == null){
+        if (user === null) {
+            alert('Có lỗi khi đăng nhập bạn đăng nhập lại nhé !');
+            window.location.href = '/admin/login';
+        } else {
+            document.querySelector('.profile-name').innerHTML = user.ho_ten;
+            document.querySelector('.profile-email').innerHTML = user.email;
+        }
+        document.getElementById('logout').addEventListener('click', function (e) {
+            // bạn có muốn đăng xuất không 
+            if (confirm('Bạn có muốn đăng xuất không ?') === true) {
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('user');
+                window.location.href = '/admin/login';
+            }
+        })
+        if (token == null, user == null) {
             alert('Bạn cần đăng nhập để sử dụng chức năng này')
             window.location.href = '/admin/login'
         }
