@@ -1,31 +1,34 @@
-# Node.Js-Web503
+# Node.js Web503
+
+## Project Structure
+```
 /project-folder
 │── /server               // Backend server
-│   ├── /config           // Cấu hình kết nối và API
-│   │   ├── db.js         // Kết nối MySQL
-│   │   ├── apiConfig.js  // Quản lý URL API
-│   ├── /routes           // Định tuyến API
-│   │   ├── authRoutes.js     // Route đăng nhập, đăng ký, đổi mật khẩu
-│   │   ├── productRoutes.js  // Route sản phẩm
-│   │   ├── categoryRoutes.js // Route danh mục
-│   │   ├── userRoutes.js     // Route người dùng
-│   ├── /controllers      // Xử lý logic API
+│   ├── /config           // Configuration files
+│   │   ├── db.js         // MySQL connection setup
+│   │   ├── apiConfig.js  // API URL management
+│   ├── /routes           // API routes
+│   │   ├── authRoutes.js     // Authentication routes (login, register, change password)
+│   │   ├── productRoutes.js  // Product routes
+│   │   ├── categoryRoutes.js // Category routes
+│   │   ├── userRoutes.js     // User management routes
+│   ├── /controllers      // API controllers
 │   │   ├── authController.js    
 │   │   ├── categoryController.js 
 │   │   ├── productController.js  
 │   │   ├── userController.js     
-│   ├── /middlewares      // Middleware xử lý
-│   │   ├── authMiddleware.js  // Middleware xác thực JWT
-│   │   ├── errorMiddleware.js // Middleware xử lý lỗi
-│   ├── /services         // Dịch vụ xử lý backend
+│   ├── /middlewares      // Middleware handlers
+│   │   ├── authMiddleware.js  // JWT authentication middleware
+│   │   ├── errorMiddleware.js // Error handling middleware
+│   ├── /services         // Backend services
 │   │   ├── mailService.js   
 │   │   ├── userService.js   
-│   ├── index.js          // Khởi chạy backend (port 5000)
+│   ├── index.js          // Backend entry point (port 5000)
 │── /client               // Frontend server
-│   ├── /views            // Giao diện người dùng
-│   ├── /layouts          // Layout chính
+│   ├── /views            // User interface
+│   ├── /layouts          // Main layout
 │   │   ├── main.ejs      
-│   ├── /pages            // Các trang giao diện
+│   ├── /pages            // UI pages
 │   │   ├── trangchu.ejs  
 │   │   ├── dangky.ejs    
 │   │   ├── dangnhap.ejs  
@@ -34,22 +37,31 @@
 │   │   ├── doipass.ejs   
 │   │   ├── loai.ejs      
 │   │   ├── quenpass.ejs  
-│   ├── /partials         // Header và Footer
+│   ├── /partials         // Header and footer components
 │   │   ├── header.ejs    
 │   │   ├── footer.ejs    
-│   ├── /public           // File tĩnh (CSS, JS, images)
-│   ├── server.js         // Chạy frontend (port 1207)
-│── .env                 // Biến môi trường
-│── package.json         // Thông tin package và dependencies
+│   ├── /public           // Static files (CSS, JS, images)
+│   ├── server.js         // Frontend server entry point (port 1207)
+│── .env                 // Environment variables
+│── package.json         // Dependencies and project metadata
+```
 
-
-# Backend
+## Installation & Setup
+### Backend
+```sh
 cd server
+npm install
 npm start
-
-# Client 
+```
+### Frontend
+```sh
+cd client
+npm install
 npm start
+```
 
+## Environment Variables (.env)
+```
 PORT_BACKEND=5000
 PORT_FRONTEND=1207
 DB_HOST=localhost
@@ -59,12 +71,12 @@ DB_NAME=yourdatabase
 JWT_SECRET=your_secret_key
 EMAIL_USER=your_email
 EMAIL_PASS=your_password
+```
 
-
-# Tính năng chính
- Đăng ký, đăng nhập, xác thực JWT
- Quản lý sản phẩm và danh mục
- Tìm kiếm và lọc sản phẩm
- Đổi mật khẩu, quên mật khẩu qua email
- API RESTful với Express
- Giao diện người dùng với EJS
+## Features
+- User authentication (register, login, JWT authentication)
+- Product and category management
+- Product search and filtering
+- Change password & password recovery via email
+- RESTful API with Express
+- User interface built with EJS
